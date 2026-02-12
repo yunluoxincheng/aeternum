@@ -1,0 +1,36 @@
+[package]
+name = "aeternum-core"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.80.0"
+description = "Aeternum cryptographic core - post-quantum secure key management system"
+license = "MIT"
+authors = ["Aeternum Team"]
+
+[dependencies]
+# 基础安全
+zeroize = { version = "=1.8.1", features = ["derive"] }
+secrecy = "=0.8.0"
+thiserror = "=1.0.61"
+rand = "=0.8.5"
+hex = "=0.4.3"
+
+# 算法库 (严格匹配 Spec)
+blake3 = { version = "=1.5.1", features = ["traits-preview"] }
+argon2 = { version = "=0.5.3" }
+chacha20poly1305 = { version = "=0.10.1" }
+x25519-dalek = { version = "=2.0.1", features = ["static_secrets"] }
+
+# 抗量子算法 (ML-KEM/Kyber)
+# 注意：pqcrypto 需要 C 编译器环境，确保 Android NDK 已配置
+# 使用 0.8.x 版本修复了 Windows 编译问题
+pqcrypto-kyber = { version = "=0.8.1" }
+pqcrypto-traits = "=0.3.5"
+
+[dev-dependencies]
+proptest = "1.4.0"
+criterion = { version = "0.5.1", features = ["html_reports"] }
+
+[[bench]]
+name = "kdf_benchmarks"
+harness = false

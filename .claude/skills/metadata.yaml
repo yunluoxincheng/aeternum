@@ -1,0 +1,195 @@
+# Aeternum 技能系统元数据配置
+# 版本: 1.0.0
+# 项目: Aeternum - 后量子安全移动密钥管理系统
+
+skills:
+  aeternum:crypto:
+    name: "Aeternum 密码学原语开发"
+    version: "1.0.0"
+    author: "Aeternum Team"
+    description: "实现密码学原语与内存安全相关功能"
+    triggers:
+      - "实现.*KEM"
+      - "添加.*加密"
+      - "实现.*哈希"
+      - "实现.*KDF"
+      - "密钥派生"
+      - "Kyber"
+      - "X25519"
+      - "XChaCha20"
+      - "Argon2"
+      - "BLAKE3"
+      - "内存安全"
+      - "zeroize"
+    output_dir: "core/src/crypto/"
+    post_action: "ask_build"
+    related_skills:
+      - aeternum:bridge
+      - aeternum:invariant
+
+  aeternum:protocol:
+    name: "Aeternum 协议与状态机开发"
+    version: "1.0.0"
+    author: "Aeternum Team"
+    description: "实现核心协议与状态机逻辑"
+    triggers:
+      - "PQRR"
+      - "纪元升级"
+      - "epoch.*upgrade"
+      - "影子包装"
+      - "Shadow Wrapping"
+      - "Device_0"
+      - "否决机制"
+      - "veto"
+      - "设备撤销"
+      - "PQRR.*协议"
+      - "密钥轮换"
+      - "rekey"
+    output_dir: "core/src/protocol/"
+    post_action: "ask_build"
+    related_skills:
+      - aeternum:crypto
+      - aeternum:android
+      - aeternum:bridge
+      - aeternum:invariant
+
+  aeternum:android:
+    name: "Aeternum Android 安全层开发"
+    version: "1.0.0"
+    author: "Aeternum Team"
+    description: "实现 Android 安全层与 UI 组件"
+    triggers:
+      - "UI.*界面"
+      - "Compose.*界面"
+      - "生物识别"
+      - "BiometricPrompt"
+      - "StrongBox"
+      - "KeyStore"
+      - "完整性检查"
+      - "Play Integrity"
+      - "安全降级"
+      - "Degraded Mode"
+      - "VaultScreen"
+      - "解锁界面"
+    output_dir: "android/app/src/main/kotlin/io/aeternum/"
+    post_action: "none"
+    related_skills:
+      - aeternum:protocol
+      - aeternum:bridge
+
+  aeternum:bridge:
+    name: "Aeternum UniFFI 桥接管理"
+    version: "1.0.0"
+    author: "Aeternum Team"
+    description: "管理 Rust ↔ Kotlin 的 UniFFI 桥接层"
+    triggers:
+      - "UDL.*接口"
+      - "桥接.*代码"
+      - "生成.*kotlin"
+      - "UniFFI"
+      - "FFI.*接口"
+      - "Rust.*Kotlin.*桥接"
+      - "添加.*接口方法"
+      - "修改.*UDL"
+    output_dir: "core/uniffi/"
+    post_action: "ask_build"
+    related_skills:
+      - aeternum:crypto
+      - aeternum:protocol
+
+  aeternum:invariant:
+    name: "Aeternum 不变量验证"
+    version: "1.0.0"
+    author: "Aeternum Team"
+    description: "验证代码是否符合四大数学不变量"
+    triggers:
+      - "验证.*不变量"
+      - "检查.*安全"
+      - "invariant"
+      - "不变量.*检查"
+      - "纪元.*单调"
+      - "Header.*完备"
+      - "否决.*优先"
+      - "因果.*熵障"
+      - "生成.*报告"
+    output_dir: "reports/"
+    post_action: "none"
+    related_skills:
+      - aeternum:crypto
+      - aeternum:protocol
+      - aeternum:android
+
+# 四大数学不变量定义
+invariants:
+  - id: "INVARIANT_1"
+    name: "纪元单调性"
+    description: "所有设备的 epoch 必须严格单调递增，禁止回滚"
+    formula: "∀ d1, d2 ∈ D_active ⟹ epoch(d1) = epoch(d2) = S_epoch"
+    violation_action: "内核锁定 → 状态隔离 → 用户警示"
+
+  - id: "INVARIANT_2"
+    name: "Header 完备性"
+    description: "每个活跃设备必须且仅能通过一个正确的 Header 获取 DEK"
+    formula: "∀ d ∈ D_active ⟺ ∃! h ∈ Ve.H: unwrap(h, d) = DEK_e"
+    violation_action: "内核锁定 → 状态隔离 → 用户警示"
+
+  - id: "INVARIANT_3"
+    name: "因果熵障"
+    description: "解密权限 ≠ 管理权限（RECOVERY 角色不能执行 σ_rotate）"
+    formula: "Role(S) = RECOVERY ⟹ σ_rotate ∉ P(S)"
+    violation_action: "内核锁定 → 状态隔离 → 用户警示"
+
+  - id: "INVARIANT_4"
+    name: "否决权优先"
+    description: "48h 窗口内任何活跃设备的 Veto 信号必须立即终止恢复流程"
+    formula: "Status(req) = COMMITTED ⟹ (t_now ≥ T_start + ΔT_window) ∧ (Vetoes(req) = ∅)"
+    violation_action: "内核锁定 → 状态隔离 → 用户警示"
+
+# 技能协作场景
+workflows:
+  - name: "添加新密码学算法"
+    steps:
+      - skill: aeternum:crypto
+        action: "实现密码学算法"
+      - question: "是否需要暴露到 Kotlin 层？"
+        if_yes: aeternum:bridge
+
+  - name: "实现新设备添加流程"
+    steps:
+      - skill: aeternum:protocol
+        action: "实现设备配对协议"
+      - skill: aeternum:crypto
+        action: "实现混合 KEM"
+      - skill: aeternum:android
+        action: "创建配对 UI"
+      - skill: aeternum:bridge
+        action: "添加 UDL 接口"
+
+  - name: "实现否决功能"
+    steps:
+      - skill: aeternum:protocol
+        action: "实现否决协议"
+      - skill: aeternum:android
+        action: "创建否决 UI"
+      - skill: aeternum:bridge
+        action: "添加接口"
+
+  - name: "首次设置"
+    steps:
+      - skill: aeternum:android
+        action: "创建设置界面"
+      - skill: aeternum:crypto
+        action: "生成 MRS 派生函数"
+      - skill: aeternum:protocol
+        action: "初始化 Device_0"
+      - skill: aeternum:bridge
+        action: "添加接口"
+
+  - name: "修复纪元回滚漏洞"
+    steps:
+      - skill: aeternum:invariant
+        action: "验证并发现问题"
+      - skill: aeternum:protocol
+        action: "修复并添加检查"
+      - skill: aeternum:invariant
+        action: "重新验证"

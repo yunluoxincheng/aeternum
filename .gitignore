@@ -1,0 +1,76 @@
+# Rust
+/target/
+**/*.rs.bk
+Cargo.lock
+
+# Android
+*.apk
+*.ap_
+*.aab
+android/.gradle/
+android/local.properties
+android/.idea/
+android/build/
+android/app/build/
+android/app/release/
+android/.DS_Store
+android/captures/
+android/externalNativeBuild
+android/.cxx
+
+# Kotlin
+*.iml
+.idea/
+misc.xml
+deploymentTargetDropDown.xml
+render.experimental.xml
+
+# macOS
+.DS_Store
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# IDE
+.vscode/
+*.swp
+*.swo
+*~
+.project
+.classpath
+.settings/
+
+# Logs
+*.log
+
+# Database
+*.db
+*.db-shm
+*.db-wal
+*.sqlite
+*.sqlite3
+
+# Keys and Certificates
+*.jks
+*.keystore
+*.pem
+*.p12
+*.pfx
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Test coverage
+*.profraw
+*.profdata
+
+# UniFFI 生成的文件
+android/app/src/main/kotlin/aeternum/
+
+# 编辑器配置
+.qoder/
+nul

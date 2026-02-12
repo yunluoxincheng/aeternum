@@ -1,0 +1,25 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(dir:*)",
+      "Bash(./gradlew assembleDebug:*)",
+      "Bash(find:*)",
+      "Bash(./gradlew:*)",
+      "Bash(echo:*)",
+      "Bash(findstr:*)",
+      "Bash(npx openspec validate:*)",
+      "Skill(openspec:apply)",
+      "Bash(cat:*)",
+      "Bash(./gradlew.bat assembleDebug:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git worktree:*)",
+      "Bash(openspec validate:*)",
+      "Bash(openssl:*)",
+      "mcp__plugin_context7_context7__query-docs",
+      "WebSearch",
+      "Bash(openspec:*)",
+      "Bash(openspec archive --help:*)"
+    ]
+  }
+}

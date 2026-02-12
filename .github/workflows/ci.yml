@@ -1,0 +1,102 @@
+name: Aeternum CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+env:
+  CARGO_TERM_COLOR: always
+  RUST_BACKTRACE: 1
+
+jobs:
+  # Rust 核心测试
+  test-core:
+    name: 测试 Rust 核心
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout 代码
+        uses: actions/checkout@v4
+
+      - name: 安装 Rust 工具链
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+
+      - name: 缓存 Cargo
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            target/
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+
+      - name: 运行格式检查
+        working-directory: ./core
+        run: cargo fmt --all -- --check
+
+      - name: 运行 Clippy
+        working-directory: ./core
+        run: cargo clippy --all-targets --all-features -- -D warnings
+
+      - name: 运行测试
+        working-directory: ./core
+        run: cargo test --all-features --verbose
+
+  # 安全审计
+  security-audit:
+    name: 安全审计
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout 代码
+        uses: actions/checkout@v4
+
+      - name: 安装 Rust 工具链
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: 安装 cargo-audit
+        run: cargo install cargo-audit
+
+      - name: 运行安全审计
+        working-directory: ./core
+        run: cargo audit
+
+  # Android 构建
+  build-android:
+    name: Android 构建
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout 代码
+        uses: actions/checkout@v4
+
+      - name: 设置 JDK 17
+        uses: actions/setup-java@v3
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: 安装 Android SDK
+        uses: android-actions/setup-android@v2
+
+      - name: 安装 NDK
+        run: sdkmanager "ndk;25.2.9519653"
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x android/gradlew || true
+
+      - name: 构建 Android Debug APK
+        working-directory: ./android
+        run: ./gradlew assembleDebug --stacktrace
+
+      - name: 上传 APK
+        uses: actions/upload-artifact@v3
+        with:
+          name: app-debug
+          path: android/app/build/outputs/apk/debug/app-debug.apk

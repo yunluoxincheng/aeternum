@@ -1,0 +1,57 @@
+// Aeternum 同步协议定义
+//
+// 定义客户端与服务器之间的通信格式
+
+syntax = "proto3";
+
+package aeternum.sync;
+
+// 同步服务
+service SyncService {
+  // 存储冷锚点
+  rpc StoreAnchor(StoreAnchorRequest) returns (StoreAnchorResponse);
+
+  // 请求恢复
+  rpc RequestRecovery(RecoveryRequest) returns (RecoveryResponse);
+
+  // 健康检查
+  rpc HealthCheck(HealthCheckRequest) returns (HealthCheckResponse);
+}
+
+// 存储锚点请求
+message StoreAnchorRequest {
+  string vault_id = 1;
+  bytes encrypted_anchor = 2;
+  int64 timestamp = 3;
+  // 客户端签名
+  bytes signature = 4;
+}
+
+// 存储锚点响应
+message StoreAnchorResponse {
+  bool success = 1;
+  string anchor_id = 2;
+  int64 expires_at = 3;
+}
+
+// 恢复请求
+message RecoveryRequest {
+  string vault_id = 1;
+  bytes challenge_response = 2;
+}
+
+// 恢复响应
+message RecoveryResponse {
+  bool success = 1;
+  bytes encrypted_anchor = 2;
+}
+
+// 健康检查
+message HealthCheckRequest {
+  string version = 1;
+}
+
+message HealthCheckResponse {
+  string status = 1;
+  string server_version = 2;
+}
