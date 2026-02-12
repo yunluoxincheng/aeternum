@@ -57,7 +57,12 @@ pub enum CryptoError {
     /// Indicates that a key or nonce was provided with an incorrect length.
     /// Includes expected and actual lengths for debugging.
     #[error("Invalid key length: expected {expected}, got {actual}")]
-    InvalidKeyLength { expected: usize, actual: usize },
+    InvalidKeyLength {
+        /// The expected key length in bytes
+        expected: usize,
+        /// The actual key length provided in bytes
+        actual: usize,
+    },
 
     /// Verification failed
     ///
