@@ -27,9 +27,29 @@ x25519-dalek = { version = "=2.0.1", features = ["static_secrets"] }
 pqcrypto-kyber = { version = "=0.8.1" }
 pqcrypto-traits = "=0.3.5"
 
+# 序列化与数据模型
+bincode = "1.3"
+serde = { version = "1.0", features = ["derive"] }
+serde_bytes = "0.11"
+
+# 密钥派生
+pbkdf2 = "0.12"
+sha2 = "0.10"
+
+# BIP-39 助记词
+bip39 = { version = "2.0", default-features = false, features = ["std"] }
+
+# CSPRNG for device ID generation
+getrandom = "0.2"
+
+# Storage engine dependencies
+tempfile = "3.10"
+parking_lot = "0.12"
+
 [dev-dependencies]
 proptest = "1.4.0"
 criterion = { version = "0.5.1", features = ["html_reports"] }
+tempfile = "3.10"
 
 [[bench]]
 name = "kdf_benchmarks"

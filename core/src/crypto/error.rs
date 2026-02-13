@@ -79,6 +79,21 @@ pub enum CryptoError {
     /// The underlying error is wrapped for debugging purposes.
     #[error("Internal cryptographic error: {0}")]
     InternalError(String),
+
+    /// Mathematical invariant violation
+    ///
+    /// Triggered when one of the four core mathematical invariants is violated:
+    /// - Invariant #1: Epoch monotonicity
+    /// - Invariant #2: Header completeness
+    /// - Invariant #3: Causal entropy barrier
+    /// - Invariant #4: Veto temporal supremacy
+    ///
+    /// When triggered, the system must initiate the fuse:
+    /// 1. Kernel lock: Stop all DEK decryption operations
+    /// 2. State isolation: Mark sync state as "anomalous fork"
+    /// 3. User alert: Force high-priority warning
+    #[error("Invariant violation: {0}")]
+    InvariantViolation(String),
 }
 
 impl CryptoError {
