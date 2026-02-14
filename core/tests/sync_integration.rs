@@ -480,7 +480,11 @@ fn test_inv_2_header_completeness_with_wire_protocol() {
 
     // 发送消息（epoch 1）应该成功
     let frame_bytes = protocol
-        .send_message(PayloadType::Sync, b"test message".to_vec(), epoch_v1.version as u32)
+        .send_message(
+            PayloadType::Sync,
+            b"test message".to_vec(),
+            epoch_v1.version as u32,
+        )
         .expect("发送 epoch 1 消息失败");
 
     // 验证 Frame 大小
@@ -530,7 +534,11 @@ fn test_inv_2_header_completeness_with_wire_protocol() {
 
     // WireProtocol 应该接受新纪元的消息
     let frame_bytes_v2 = protocol
-        .send_message(PayloadType::Sync, b"epoch 2 message".to_vec(), epoch_v2.version as u32)
+        .send_message(
+            PayloadType::Sync,
+            b"epoch 2 message".to_vec(),
+            epoch_v2.version as u32,
+        )
         .expect("发送 epoch 2 消息失败");
 
     assert_eq!(frame_bytes_v2.len(), FRAME_SIZE);
@@ -557,7 +565,10 @@ fn test_inv_2_header_completeness_with_wire_protocol() {
     // INV_2: 验证纪元单调性（禁止回滚）
     let result = protocol.send_message(PayloadType::Sync, b"rollback attempt".to_vec(), 1);
     assert!(result.is_err(), "INV_1 违规: epoch 回滚应该被拒绝");
-    assert!(matches!(result, Err(aeternum_core::sync::WireError::EpochRegression { .. })));
+    assert!(matches!(
+        result,
+        Err(aeternum_core::sync::WireError::EpochRegression { .. })
+    ));
 }
 
 #[test]
@@ -572,12 +583,7 @@ fn test_inv_2_device_header_epoch_consistency() {
     let keypair = KyberKEM::generate_keypair();
     let (_ss, encrypted_dek) = KyberKEM::encapsulate(&keypair.public).unwrap();
 
-    let header = DeviceHeader::new(
-        device_id,
-        epoch.clone(),
-        keypair.public,
-        encrypted_dek,
-    );
+    let header = DeviceHeader::new(device_id, epoch.clone(), keypair.public, encrypted_dek);
 
     // 验证 Header 的 epoch 与 WireProtocol 兼容
     let session_key = XChaCha20Key::generate();
@@ -617,12 +623,7 @@ fn test_inv_2_multiple_devices_same_epoch() {
         let keypair = KyberKEM::generate_keypair();
         let (_ss, encrypted_dek) = KyberKEM::encapsulate(&keypair.public).unwrap();
 
-        let header = DeviceHeader::new(
-            device_id,
-            epoch.clone(),
-            keypair.public,
-            encrypted_dek,
-        );
+        let header = DeviceHeader::new(device_id, epoch.clone(), keypair.public, encrypted_dek);
 
         headers.push(header);
     }
@@ -636,10 +637,7 @@ fn test_inv_2_multiple_devices_same_epoch() {
     }
 
     // INV_2: 验证每个设备都有唯一的 DeviceId
-    let device_ids: std::collections::HashSet<_> = headers
-        .iter()
-        .map(|h| h.device_id)
-        .collect();
+    let device_ids: std::collections::HashSet<_> = headers.iter().map(|h| h.device_id).collect();
 
     assert_eq!(
         device_ids.len(),
@@ -723,12 +721,20 @@ fn test_inv_2_epoch_upgrade_header_migration() {
 
     // 发送纪元 1 消息
     let _ = protocol
-        .send_message(PayloadType::Sync, b"epoch 1".to_vec(), epoch_v1.version as u32)
+        .send_message(
+            PayloadType::Sync,
+            b"epoch 1".to_vec(),
+            epoch_v1.version as u32,
+        )
         .expect("发送 epoch 1 失败");
 
     // 发送纪元 2 消息
     let _ = protocol
-        .send_message(PayloadType::Sync, b"epoch 2".to_vec(), epoch_v2.version as u32)
+        .send_message(
+            PayloadType::Sync,
+            b"epoch 2".to_vec(),
+            epoch_v2.version as u32,
+        )
         .expect("发送 epoch 2 失败");
 
     assert_eq!(protocol.current_epoch(), epoch_v2.version as u32);

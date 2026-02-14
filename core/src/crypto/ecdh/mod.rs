@@ -32,7 +32,7 @@ use crate::crypto::kem::KyberSharedSecret;
 use zeroize::{Zeroize, ZeroizeOnDrop};
 
 /// X25519 public key (32 bytes)
-#[derive(Clone, Copy, PartialEq, Eq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct X25519PublicKeyBytes(pub [u8; 32]);
 
 impl X25519PublicKeyBytes {

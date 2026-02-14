@@ -494,7 +494,6 @@ mod tests {
             }
         }
 
-
         fn fail(&self) {
             *self.should_fail.lock().unwrap() = true;
         }

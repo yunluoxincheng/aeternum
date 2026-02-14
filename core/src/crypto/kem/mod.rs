@@ -99,7 +99,7 @@ impl KyberSecretKeyBytes {
 }
 
 /// Kyber-1024 encapsulated ciphertext (1568 bytes)
-#[derive(Clone, PartialEq, Eq)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub struct KyberCipherText(pub [u8; 1568]);
 
 impl KyberCipherText {
