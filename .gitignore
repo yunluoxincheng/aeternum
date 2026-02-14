@@ -70,6 +70,16 @@ Desktop.ini
 
 # UniFFI 生成的文件
 android/app/src/main/kotlin/aeternum/
+core/uniffi/
+uniffi/
+core/uniffi-bindgen.rs
+core/test.udl
+
+# Proptest 回归测试数据
+core/proptest-regressions/
+
+# 报告文件
+reports/
 
 # 编辑器配置
 .qoder/
