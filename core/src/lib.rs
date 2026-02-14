@@ -35,6 +35,9 @@ pub mod models;
 /// Storage engine module (shadow write + crash recovery)
 pub mod storage;
 
+/// Aeternum Wire protocol layer (device-to-device sync)
+pub mod sync;
+
 // Re-export common types at the crate root
 pub use crypto::{error::CryptoError, error::Result};
 pub use models::{

@@ -1,0 +1,49 @@
+# OpenSpec 提案审查技能元数据
+name: "OpenSpec 提案审查"
+version: "1.0.0"
+author: "Aeternum Team"
+description: "审查 OpenSpec 变更提案的规范合规性、文档一致性和逻辑安全性"
+
+# 触发关键词
+triggers:
+  - "审查.*提案"
+  - "review.*proposal"
+  - "openspec.*review"
+  - "/openspec:review"
+  - "检查.*openspec"
+  - "validate.*change"
+
+# 输出目录（审查报告）
+output_dir: "reports/"
+
+# 执行后操作
+post_action: "ask_save_report"
+
+# 是否为必须技能
+is_mandatory: false
+
+# 相关技能
+related_skills:
+  - "aeternum:checkpoint"
+
+# 审查配置
+review_config:
+  # 审查层级
+  layers:
+    - structure       # Layer 1: 结构验证
+    - compliance     # Layer 2: 规范合规
+    - consistency    # Layer 3: 文档一致性
+    - logic          # Layer 4: 逻辑与安全
+    - completeness   # Layer 5: 完整性
+
+  # 严重程度
+  severity:
+    - error      # 阻止提案通过
+    - warning    # 建议修复
+    - info       # 信息提示
+
+  # 自动审查模式
+  auto_review: true  # 检测到新提案时自动审查
+
+  # 严格模式开关
+  strict_mode: false  # 默认为标准模式，用户可启用严格模式
