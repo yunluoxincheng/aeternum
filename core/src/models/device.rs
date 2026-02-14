@@ -206,6 +206,16 @@ impl DeviceId {
     }
 }
 
+impl std::fmt::Display for DeviceId {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        // Display as hex string
+        for byte in &self.0 {
+            write!(f, "{:02x}", byte)?;
+        }
+        Ok(())
+    }
+}
+
 // ============================================================================
 // Device Status
 // ============================================================================

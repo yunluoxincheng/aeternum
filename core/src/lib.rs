@@ -12,9 +12,10 @@
 //! ## Module Organization
 //!
 //! - `crypto` - Cryptographic primitives (hash, KDF, AEAD, KEM, ECDH)
-//! - `storage` - Shadow writing and crash consistency engine
-//! - `sync` - Aeternum Wire protocol
 //! - `models` - Epoch and Header data models
+//! - `storage` - Shadow writing and crash consistency engine
+//! - `protocol` - PQRR state machine and invariant enforcement
+//! - `sync` - Aeternum Wire protocol
 //!
 //! ## Safety Guarantees
 //!
@@ -25,6 +26,9 @@
 #![warn(missing_docs)]
 #![warn(unused_extern_crates)]
 #![warn(unused_imports)]
+
+// UniFFI scaffolding - must be at the top level
+uniffi::setup_scaffolding!("aeternum");
 
 /// Cryptographic primitives module
 pub mod crypto;
@@ -38,6 +42,9 @@ pub mod storage;
 /// Aeternum Wire protocol layer (device-to-device sync)
 pub mod sync;
 
+/// Protocol state machine (PQRR, invariant enforcement)
+pub mod protocol;
+
 // Re-export common types at the crate root
 pub use crypto::{error::CryptoError, error::Result};
 pub use models::{
@@ -46,6 +53,7 @@ pub use models::{
     key_hierarchy::{DataEncryptionKey, DeviceKey, IdentityKey, MasterSeed, RecoveryKey, VaultKey},
     vault::{VaultBlob, VaultHeader},
 };
+pub use protocol::{PqrrError, PqrrStateMachine, ProtocolState};
 
 #[cfg(test)]
 mod tests {

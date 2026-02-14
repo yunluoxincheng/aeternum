@@ -27,7 +27,7 @@ impl CryptoAlgorithm {
 }
 
 /// Cryptographic epoch - identifies the generation of keys
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 pub struct CryptoEpoch {
     /// Epoch version number (must be monotonically increasing)
     pub version: u64,

@@ -7,6 +7,9 @@ description = "Aeternum cryptographic core - post-quantum secure key management 
 license = "MIT"
 authors = ["Aeternum Team"]
 
+[lib]
+crate-type = ["cdylib", "staticlib", "rlib"]
+
 [dependencies]
 # 基础安全
 zeroize = { version = "=1.8.1", features = ["derive"] }
@@ -46,10 +49,20 @@ getrandom = "0.2"
 tempfile = "3.10"
 parking_lot = "0.12"
 
+# UniFFI bridging
+uniffi = { version = "0.28", features = ["build", "cli"] }
+
 [dev-dependencies]
 proptest = "1.4.0"
 criterion = { version = "0.5.1", features = ["html_reports"] }
 tempfile = "3.10"
+
+[build-dependencies]
+uniffi = { version = "0.28", features = ["build"] }
+
+[[bin]]
+name = "uniffi-bindgen"
+path = "uniffi-bindgen.rs"
 
 [[bench]]
 name = "kdf_benchmarks"
