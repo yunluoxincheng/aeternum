@@ -34,7 +34,7 @@
 //! use aeternum_core::crypto::aead::XChaCha20Key;
 //!
 //! let session_key = XChaCha20Key::generate();
-//! let protocol = WireProtocol::new(session_key);
+//! let mut protocol = WireProtocol::new(session_key);
 //!
 //! // 发送消息
 //! let frame = protocol.send_message(
@@ -277,7 +277,10 @@ impl WireProtocol {
         // 检查 48h 窗口
         let window_end = recovery_start_time.saturating_add(VETO_WINDOW_SECONDS);
         if current_time > window_end {
-            return Err(WireError::AuthenticationFailed); // TODO: Add VetoExpired variant
+            return Err(WireError::VetoExpired {
+                current: current_time,
+                window_end,
+            });
         }
 
         // TODO: 验证 StrongBox 签名
@@ -444,30 +447,49 @@ mod tests {
         let key = XChaCha20Key::generate();
         let protocol = WireProtocol::new(key);
 
-        let current_time = SystemTime::now()
+        let now = SystemTime::now()
             .duration_since(UNIX_EPOCH)
             .unwrap()
             .as_secs();
 
-        // 在窗口内的否决
+        // 在窗口内的否决（窗口开始时间 = now，窗口结束时间 = now + 48h）
         let veto_in_window = VetoMessage {
             recovery_request_id: "test-1".to_string(),
             device_id: "device-1".to_string(),
             signature: vec![1, 2, 3],
-            timestamp: current_time,
+            timestamp: now,
         };
-        assert!(protocol.handle_veto(&veto_in_window, current_time).is_ok());
+        // 当前时间在窗口内
+        assert!(protocol.handle_veto(&veto_in_window, now).is_ok());
 
-        // 超出窗口的否决
+        // 超出窗口的否决（恢复开始时间 = now - 48h - 1s）
+        let recovery_start_time = now.saturating_sub(VETO_WINDOW_SECONDS + 1);
         let veto_expired = VetoMessage {
             recovery_request_id: "test-2".to_string(),
             device_id: "device-2".to_string(),
             signature: vec![4, 5, 6],
-            timestamp: current_time - VETO_WINDOW_SECONDS - 1,
+            timestamp: recovery_start_time,
         };
-        assert!(protocol
-            .handle_veto(&veto_expired, current_time - VETO_WINDOW_SECONDS - 1)
-            .is_err());
+
+        // 当前时间 now 已超出窗口（窗口结束时间 = recovery_start_time + 48h = now - 1）
+        let result = protocol.handle_veto(&veto_expired, recovery_start_time);
+        assert!(result.is_err());
+
+        // 验证返回的是 VetoExpired 错误
+        match result {
+            Err(WireError::VetoExpired {
+                current,
+                window_end,
+            }) => {
+                assert_eq!(current, now);
+                assert_eq!(
+                    window_end,
+                    recovery_start_time.saturating_add(VETO_WINDOW_SECONDS)
+                );
+                assert_eq!(window_end, now.saturating_sub(1));
+            }
+            _ => panic!("Expected VetoExpired error, got: {:?}", result),
+        }
     }
 
     #[test]

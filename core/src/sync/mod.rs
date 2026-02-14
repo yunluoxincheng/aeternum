@@ -57,7 +57,10 @@ pub use chaff::{ChaffGenerator, ChaffSyncMessage, TimingMetadata, JITTER_MAX_MS,
 pub use codec::{MessageCodec, PayloadType};
 pub use frame::WireFrame;
 pub use version::{
-    CapabilityFlags, ProtocolVersion, VersionNegotiation, VersionNegotiationMessage,
+    CapabilityFlags,
+    ProtocolVersion,
+    VersionNegotiation, // Re-export for doctests
+    VersionNegotiationMessage,
 };
 pub use wire::{VetoMessage, WireProtocol, VETO_WINDOW_SECONDS};
 
@@ -106,6 +109,15 @@ pub enum WireError {
         current: u32,
         /// Attempted epoch value (must be > current)
         attempted: u32,
+    },
+
+    /// Veto expired (outside 48h window) - Invariant #4
+    #[error("Veto expired: current time {current}, window end {window_end}")]
+    VetoExpired {
+        /// Current timestamp (Unix seconds)
+        current: u64,
+        /// Window end timestamp (Unix seconds)
+        window_end: u64,
     },
 
     /// Version negotiation failed

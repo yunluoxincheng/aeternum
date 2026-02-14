@@ -52,13 +52,10 @@ use crate::protocol::pqrr::PqrrStateMachine;
 /// ```no_run
 /// use aeternum_core::protocol::device_mgmt::register_device;
 /// use aeternum_core::protocol::PqrrStateMachine;
-/// use aeternum_core::models::{DeviceId, CryptoEpoch, Role};
+/// use aeternum_core::models::{DeviceId, Role};
 /// use aeternum_core::crypto::kem::KyberKEM;
-/// use std::collections::HashMap;
 ///
-/// let epoch = CryptoEpoch::initial();
-/// let headers = HashMap::new();
-/// let mut sm = PqrrStateMachine::new(epoch, headers);
+/// let mut sm = PqrrStateMachine::new(0);
 ///
 /// let device_id = DeviceId::generate();
 /// let keypair = KyberKEM::generate_keypair();
@@ -66,7 +63,7 @@ use crate::protocol::pqrr::PqrrStateMachine;
 ///
 /// register_device(&mut sm, device_id.clone(), keypair.public, role).unwrap();
 ///
-/// assert!(sm.is_device_active(&device_id));
+/// assert!(sm.is_device_active(device_id.as_bytes().to_vec()));
 /// ```
 pub fn register_device(
     state_machine: &mut PqrrStateMachine,
@@ -99,8 +96,8 @@ pub fn register_device(
 
     // Create device header with Active status
     let mut header = DeviceHeader::new(
-        device_id.clone(),
-        state_machine.current_epoch().clone(),
+        device_id,
+        *state_machine.current_epoch(),
         public_key,
         wrapped_dek,
     );
@@ -109,7 +106,7 @@ pub fn register_device(
     // Add to device headers
     state_machine
         .device_headers_mut()
-        .insert(device_id.clone(), header);
+        .insert(device_id, header);
 
     Ok(())
 }
@@ -137,12 +134,8 @@ pub fn register_device(
 /// ```no_run
 /// use aeternum_core::protocol::device_mgmt::validate_header_completeness;
 /// use aeternum_core::protocol::PqrrStateMachine;
-/// use aeternum_core::models::{DeviceId, CryptoEpoch};
-/// use std::collections::HashMap;
 ///
-/// let epoch = CryptoEpoch::initial();
-/// let headers = HashMap::new();
-/// let sm = PqrrStateMachine::new(epoch, headers);
+/// let sm = PqrrStateMachine::new(0);
 ///
 /// assert!(validate_header_completeness(&sm).is_ok());
 /// ```
@@ -222,13 +215,10 @@ fn header_can_be_unwrapped(_header: &DeviceHeader) -> bool {
 /// ```no_run
 /// use aeternum_core::protocol::device_mgmt::{register_device, revoke_device};
 /// use aeternum_core::protocol::PqrrStateMachine;
-/// use aeternum_core::models::{DeviceId, CryptoEpoch, Role};
+/// use aeternum_core::models::{DeviceId, Role};
 /// use aeternum_core::crypto::kem::KyberKEM;
-/// use std::collections::HashMap;
 ///
-/// let epoch = CryptoEpoch::initial();
-/// let headers = HashMap::new();
-/// let mut sm = PqrrStateMachine::new(epoch, headers);
+/// let mut sm = PqrrStateMachine::new(0);
 ///
 /// let device_id = DeviceId::generate();
 /// let keypair = KyberKEM::generate_keypair();
@@ -236,7 +226,7 @@ fn header_can_be_unwrapped(_header: &DeviceHeader) -> bool {
 ///
 /// revoke_device(&mut sm, &device_id).unwrap();
 ///
-/// assert!(!sm.is_device_active(&device_id));
+/// assert!(!sm.is_device_active(device_id.as_bytes().to_vec()));
 /// ```
 pub fn revoke_device(state_machine: &mut PqrrStateMachine, device_id: &DeviceId) -> Result<()> {
     // Check device exists
@@ -322,7 +312,7 @@ pub fn get_active_devices(state_machine: &PqrrStateMachine) -> Vec<DeviceId> {
         .device_headers()
         .iter()
         .filter(|(_, h)| h.status == DeviceStatus::Active)
-        .map(|(id, _)| id.clone())
+        .map(|(id, _)| *id)
         .collect()
 }
 
@@ -340,7 +330,7 @@ pub fn get_revoked_devices(state_machine: &PqrrStateMachine) -> Vec<DeviceId> {
         .device_headers()
         .iter()
         .filter(|(_, h)| h.status == DeviceStatus::Revoked)
-        .map(|(id, _)| id.clone())
+        .map(|(id, _)| *id)
         .collect()
 }
 

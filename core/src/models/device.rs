@@ -260,10 +260,17 @@ pub enum DeviceStatus {
 /// Data Encryption Key (DEK) for each device. This allows the vault
 /// to be decrypted by any active device.
 ///
-/// NOTE: KEM serialization is temporarily disabled for Phase 4 tests.
-/// The `public_key` and `encrypted_dek` fields will be properly serialized
-/// when the VaultBlob module is implemented.
-#[derive(Debug, Clone, PartialEq, Eq)]
+/// ## Serialization
+///
+/// Headers can be serialized for network transmission or storage:
+/// - `serialize()`: Convert to bytes using bincode
+/// - `deserialize()`: Reconstruct from bytes
+///
+/// ## Invariant Enforcement
+///
+/// - **Invariant #2**: Each active device must have exactly one header
+/// - Headers are immutable once created (except status changes)
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct DeviceHeader {
     /// Device identifier
     pub device_id: DeviceId,
@@ -443,6 +450,74 @@ impl DeviceHeader {
     pub fn belongs_to_epoch(&self, epoch: &CryptoEpoch) -> bool {
         self.epoch.version == epoch.version
     }
+
+    // ------------------------------------------------------------------------
+    // Serialization Methods
+    // ------------------------------------------------------------------------
+
+    /// Serialize this header to bytes
+    ///
+    /// Uses bincode for efficient binary serialization.
+    ///
+    /// # Returns
+    ///
+    /// Serialized bytes representing this header.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use aeternum_core::models::{DeviceId, DeviceHeader};
+    /// use aeternum_core::models::epoch::CryptoEpoch;
+    /// use aeternum_core::crypto::kem::{KyberKEM, KyberCipherText};
+    ///
+    /// let device_id = DeviceId::generate();
+    /// let epoch = CryptoEpoch::initial();
+    /// let keypair = KyberKEM::generate_keypair();
+    /// let (_ss, encrypted_dek) = KyberKEM::encapsulate(&keypair.public).unwrap();
+    ///
+    /// let header = DeviceHeader::new(device_id, epoch, keypair.public, encrypted_dek);
+    /// let serialized = header.serialize();
+    /// assert!(!serialized.is_empty());
+    /// ```
+    pub fn serialize(&self) -> Vec<u8> {
+        bincode::serialize(self).expect("DeviceHeader serialization should never fail")
+    }
+
+    /// Deserialize a header from bytes
+    ///
+    /// # Arguments
+    ///
+    /// - `bytes`: Serialized header data
+    ///
+    /// # Returns
+    ///
+    /// Deserialized `DeviceHeader`.
+    ///
+    /// # Panics
+    ///
+    /// Panics if deserialization fails (corrupted data).
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use aeternum_core::models::{DeviceId, DeviceHeader};
+    /// use aeternum_core::models::epoch::CryptoEpoch;
+    /// use aeternum_core::crypto::kem::{KyberKEM, KyberCipherText};
+    ///
+    /// let device_id = DeviceId::generate();
+    /// let epoch = CryptoEpoch::initial();
+    /// let keypair = KyberKEM::generate_keypair();
+    /// let (_ss, encrypted_dek) = KyberKEM::encapsulate(&keypair.public).unwrap();
+    ///
+    /// let header = DeviceHeader::new(device_id, epoch, keypair.public, encrypted_dek);
+    /// let serialized = header.serialize();
+    ///
+    /// let deserialized = DeviceHeader::deserialize(&serialized);
+    /// assert_eq!(deserialized.device_id, header.device_id);
+    /// ```
+    pub fn deserialize(bytes: &[u8]) -> Self {
+        bincode::deserialize(bytes).expect("DeviceHeader deserialization failed - corrupted data")
+    }
 }
 
 // ============================================================================
@@ -601,5 +676,102 @@ mod tests {
         // Next epoch should not match
         let next_epoch = epoch.next();
         assert!(!header.belongs_to_epoch(&next_epoch));
+    }
+
+    // ------------------------------------------------------------------------
+    // Serialization Tests
+    // ------------------------------------------------------------------------
+
+    #[test]
+    fn test_device_header_serialize_roundtrip() {
+        let device_id = DeviceId::generate();
+        let epoch = CryptoEpoch::initial();
+        let keypair = KyberKEM::generate_keypair();
+        let (_ss, encrypted_dek) = KyberKEM::encapsulate(&keypair.public).unwrap();
+
+        let header = DeviceHeader::new(device_id, epoch.clone(), keypair.public, encrypted_dek);
+
+        // Serialize
+        let serialized = header.serialize();
+        assert!(
+            !serialized.is_empty(),
+            "Serialized data should not be empty"
+        );
+
+        // Deserialize
+        let deserialized = DeviceHeader::deserialize(&serialized);
+
+        // Verify all fields match
+        assert_eq!(deserialized.device_id, header.device_id);
+        assert_eq!(deserialized.epoch.version, header.epoch.version);
+        assert_eq!(deserialized.status, header.status);
+        assert_eq!(deserialized.created_at, header.created_at);
+        assert_eq!(deserialized.public_key.0, header.public_key.0);
+        assert_eq!(deserialized.encrypted_dek.0, header.encrypted_dek.0);
+    }
+
+    #[test]
+    fn test_device_header_serialize_preserves_epoch() {
+        // Test serialization with different epochs (Invariant #1)
+        let device_id = DeviceId::generate();
+        let epoch1 = CryptoEpoch::new(5, crate::models::epoch::CryptoAlgorithm::V1);
+        let keypair = KyberKEM::generate_keypair();
+        let (_ss, encrypted_dek) = KyberKEM::encapsulate(&keypair.public).unwrap();
+
+        let header = DeviceHeader::new(device_id, epoch1.clone(), keypair.public, encrypted_dek);
+
+        let serialized = header.serialize();
+        let deserialized = DeviceHeader::deserialize(&serialized);
+
+        // Epoch must be preserved exactly
+        assert_eq!(deserialized.epoch.version, 5);
+        assert_eq!(deserialized.epoch.version, epoch1.version);
+    }
+
+    #[test]
+    fn test_device_header_serialize_shadow_anchor() {
+        // Test serialization of Device_0 (shadow anchor)
+        let epoch = CryptoEpoch::initial();
+        let keypair = KyberKEM::generate_keypair();
+        let (_ss, encrypted_dek) = KyberKEM::encapsulate(&keypair.public).unwrap();
+
+        let header = DeviceHeader::shadow_anchor(epoch.clone(), keypair.public, encrypted_dek);
+
+        let serialized = header.serialize();
+        let deserialized = DeviceHeader::deserialize(&serialized);
+
+        // Shadow anchor must preserve all-zero device ID
+        assert!(deserialized.device_id.is_shadow_anchor());
+        assert_eq!(deserialized.device_id.0, [0u8; 16]);
+    }
+
+    #[test]
+    #[should_panic]
+    fn test_device_header_deserialize_invalid_data() {
+        // Test that deserializing invalid data panics
+        let invalid_data = vec![0xFF, 0xFF, 0xFF];
+        DeviceHeader::deserialize(&invalid_data);
+    }
+
+    #[test]
+    fn test_device_header_serialize_with_revoked_status() {
+        // Test that status changes are preserved through serialization
+        let device_id = DeviceId::generate();
+        let epoch = CryptoEpoch::initial();
+        let keypair = KyberKEM::generate_keypair();
+        let (_ss, encrypted_dek) = KyberKEM::encapsulate(&keypair.public).unwrap();
+
+        let mut header = DeviceHeader::new(device_id, epoch, keypair.public, encrypted_dek);
+
+        // Revoke the device
+        header.revoke();
+        assert_eq!(header.status, DeviceStatus::Revoked);
+
+        // Serialize and deserialize
+        let serialized = header.serialize();
+        let deserialized = DeviceHeader::deserialize(&serialized);
+
+        // Status must be preserved
+        assert_eq!(deserialized.status, DeviceStatus::Revoked);
     }
 }

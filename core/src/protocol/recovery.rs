@@ -105,7 +105,7 @@ impl RecoveryRequestId {
         use getrandom::getrandom;
         let mut bytes = [0u8; 16];
         getrandom(&mut bytes).expect("CSPRNG failure");
-        let hex = hex::encode(&bytes);
+        let hex = hex::encode(bytes);
         Self(format!("req_{}", hex))
     }
 
@@ -128,6 +128,7 @@ impl RecoveryRequestId {
     }
 
     /// Clone as string
+    #[allow(clippy::inherent_to_string)]
     pub fn to_string(&self) -> String {
         self.0.clone()
     }

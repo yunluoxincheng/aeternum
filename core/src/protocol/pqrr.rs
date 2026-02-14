@@ -171,7 +171,7 @@ impl RekeyingContext {
     /// Removes device from pending list and adds to completed set.
     pub fn mark_device_completed(&mut self, device_id: &DeviceId) {
         self.pending_devices.retain(|id| id != device_id);
-        self.completed_devices.insert(device_id.clone());
+        self.completed_devices.insert(*device_id);
     }
 }
 
@@ -306,6 +306,7 @@ impl PqrrStateMachine {
     /// ```no_run
     /// use aeternum_core::protocol::PqrrStateMachine;
     /// use aeternum_core::models::epoch::CryptoEpoch;
+    /// use aeternum_core::protocol::pqrr::ProtocolState;
     /// use std::collections::HashMap;
     ///
     /// let epoch = CryptoEpoch::initial();
@@ -616,7 +617,7 @@ impl PqrrStateMachine {
 
     /// Get device headers (UniFFI exported)
     ///
-    /// Returns list of all device header information.
+    /// Returns list of all device header information with serialized blobs.
     pub fn get_device_headers(&self) -> Vec<DeviceHeaderInfo> {
         self.device_headers
             .iter()
@@ -624,7 +625,7 @@ impl PqrrStateMachine {
                 device_id: device_id.to_string(),
                 epoch_version: header.epoch.version as u32,
                 status: format!("{:?}", header.status),
-                header_blob: vec![], // TODO: Serialize header
+                header_blob: header.serialize(), // Serialize complete header
             })
             .collect()
     }
