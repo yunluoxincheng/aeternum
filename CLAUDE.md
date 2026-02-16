@@ -1,3 +1,59 @@
+<!-- MANDATORY-CHECKPOINT:START -->
+# ⚠️ 强制前置检查点（最高优先级）
+
+**这些指令对所有在此项目中工作的 AI 助手强制执行。**
+
+在开始**任何**代码修改、功能添加或架构调整之前，你必须：
+
+1. **识别任务类型**：
+   - `crypto` - 密码学原语（KEM、KDF、哈希等）
+   - `protocol` - 协议与状态机（PQRR、纪元升级、设备管理等）
+   - `android` - Android 安全层与 UI
+   - `bridge` - UniFFI 桥接
+   - `invariant` - 不变量验证
+
+2. **执行技能调用链**：
+   ```
+   Step 1: 调用 aeternum-checkpoint（读取 .claude/skills/aeternum-checkpoint/skill.md）
+   Step 2: 完成文档检查和约束确认
+   Step 3: 调用对应的 aeternum-[类型] skill
+   ```
+
+3. **完成检查清单**：
+   - [ ] 我已识别任务类型
+   - [ ] 我已调用 aeternum-checkpoint 并阅读所有必读文档
+   - [ ] 我理解并记录了所有不可违反的约束
+   - [ ] 我已调用对应的 aeternum-[类型] skill
+   - [ ] 我知道输出文件应该放在哪个目录
+
+4. **在继续之前**，向用户确认：
+   > "✅ Checkpoint 通过。\n> 任务类型：[类型]\n> 必读文档：[列表]\n> 关键约束：[约束列表]\n> 已调用 skill：aeternum-[类型]\n> 是否继续执行？"
+
+**技能调用示例**：
+```
+任务: "实现 Kyber-1024 KEM"
+→ aeternum-checkpoint → aeternum-crypto
+
+任务: "添加设备撤销功能"
+→ aeternum-checkpoint → aeternum-protocol
+
+任务: "创建生物识别界面"
+→ aeternum-checkpoint → aeternum-android
+
+任务: "修改 UDL 接口"
+→ aeternum-checkpoint → aeternum-bridge
+
+任务: "验证不变量"
+→ aeternum-checkpoint → aeternum-invariant
+```
+
+**例外情况**：
+- ❌ 读取文件/查看代码状态 - 不需要 skill
+- ❌ 回答解释性问题 - 不需要 skill
+- ✅ 任何修改/创建/重构代码 - 必须 checkpoint + 对应 skill
+
+<!-- MANDATORY-CHECKPOINT:END -->
+
 <!-- OPENSPEC:START -->
 # OpenSpec Instructions
 
@@ -105,12 +161,14 @@ cd android
 
 ### UniFFI 桥接机制（Rust ↔ Kotlin 边界）
 
-- **接口定义**: `core/uniffi/aeternum.udl`（修改后必须重新生成桥接代码）
-- **Kotlin 生成位置**: `android/app/src/main/kotlin/aeternum/`（勿手动修改）
+- **接口定义**: 使用 **proc-macro 模式**（`#[uniffi::export]` 和 `#[derive(uniffi::*)]` 宏）
+- **Kotlin 生成位置**: `android/app/src/main/kotlin/aeternum/uniffi/aeternum/`（自动生成，勿手动修改）
+- **生成脚本**: `./scripts/generate-bridge.sh`（proc-macro 模式，Windows 兼容）
 - **核心原则**:
   - Kotlin **严禁**持有明文密钥的 `ByteArray`
   - 所有解密操作必须在 Rust 端完成，仅返回脱敏数据
   - 敏感对象必须实现 `Zeroize` 特性，确保 Drop 时内存被物理擦除
+- **相关文档**: [UniFFI Proc-Macro 迁移指南](docs/bridge/UniFFI-Proc-Macro-Migration.md)
 
 ### 密码学安全原则
 
@@ -220,21 +278,41 @@ Uninitialized → Initializing → Active (Idle/Decrypting/Rekeying)
 
 | 技能 | 用途 | 触发方式 |
 |------|------|---------|
-| `aeternum:crypto` | 密码学原语开发 | Kyber, X25519, KDF, zeroize |
-| `aeternum:protocol` | 协议与状态机开发 | PQRR, 纪元升级, 影子包装, 否决 |
-| `aeternum:android` | Android 安全层开发 | 生物识别, StrongBox, Play Integrity |
-| `aeternum:bridge` | UniFFI 桥接管理 | UDL 接口, 桥接代码, FFI |
-| `aeternum:invariant` | 不变量验证 | 验证不变量, 生成报告 |
+| `openspec-review` | **OpenSpec 提案审查** | 审查提案文档质量 |
+| `openspec-completion` | **OpenSpec 完成情况审查** | 审查提案实现完成情况 |
+| `aeternum-checkpoint` | **任务检查点（前置必选）** | 所有开发任务 |
+| `aeternum-crypto` | 密码学原语开发 | Kyber, X25519, KDF, zeroize |
+| `aeternum-protocol` | 协议与状态机开发 | PQRR, 纪元升级, 影子包装, 否决 |
+| `aeternum-android` | Android 安全层开发 | 生物识别, StrongBox, Play Integrity |
+| `aeternum-bridge` | UniFFI 桥接管理 | UDL 接口, 桥接代码, FFI |
+| `aeternum-invariant` | 不变量验证 | 验证不变量, 生成报告 |
+
+> **重要**:
+> - `aeternum-checkpoint` 是所有开发任务的前置技能，确保相关文档已被阅读后再开始编码
+> - `openspec-completion` 用于提案实现完成后审查代码质量、文档符合性和安全性
 
 ### 使用示例
 
 ```
-/aeternum:crypto 实现 Kyber-1024 KEM 封装功能
-/aeternum:protocol 添加设备撤销功能
-/aeternum:android 创建生物识别认证界面
-/aeternum:bridge 添加新的 UniFFI 接口方法
-/aeternum:invariant 验证 core/src/protocol/ 全部文件
+/openspec-review add-models                  # 审查提案文档质量
+/openspec-completion add-models             # 审查提案实现完成情况
+/aeternum-checkpoint 实现密码学功能前的文档检查
+/aeternum-crypto 实现 Kyber-1024 KEM 封装功能
+/aeternum-protocol 添加设备撤销功能
+/aeternum-android 创建生物识别认证界面
+/aeternum-bridge 添加新的 UniFFI 接口方法
+/aeternum-invariant 验证 core/src/protocol/ 全部文件
 ```
+
+### Checkpoint 工作流程
+
+当请求任何开发任务时：
+
+1. **任务分类** → 自动识别任务类型（crypto/protocol/android/bridge/invariant）
+2. **文档映射** → 确定需要阅读的文档列表
+3. **阅读验证** → 逐个读取并确认理解关键章节
+4. **约束确认** → 明确不可违反的约束
+5. **开始执行** → 在遵守所有约束的前提下开始编码
 
 ## 相关规范文档
 

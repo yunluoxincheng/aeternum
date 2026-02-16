@@ -3,7 +3,45 @@
 # 项目: Aeternum - 后量子安全移动密钥管理系统
 
 skills:
-  aeternum:crypto:
+  openspec-review:
+    name: "OpenSpec 提案审查"
+    version: "1.0.0"
+    author: "Aeternum Team"
+    description: "审查 OpenSpec 变更提案的规范合规性、文档一致性和逻辑安全性"
+    triggers:
+      - "审查.*提案"
+      - "review.*proposal"
+      - "openspec.*review"
+      - "/openspec-review"
+      - "检查.*openspec"
+      - "validate.*change"
+    output_dir: "reports/"
+    post_action: "ask_save_report"
+    is_mandatory: false
+    related_skills:
+      - aeternum-checkpoint
+  openspec-completion:
+    name: "OpenSpec 完成情况审查"
+    version: "1.0.0"
+    author: "Aeternum Team"
+    description: "审查 OpenSpec 插案实现后的代码质量、文档符合性、功能测试和安全性"
+    triggers:
+      - "审查.*完成"
+      - "completion.*review"
+      - "openspec.*completion"
+      - "/openspec-completion"
+      - "检查.*实现"
+      - "验证.*代码"
+      - "代码.*完成.*情况"
+      - "实现.*审查"
+    output_dir: "reports/"
+    post_action: "ask_save_report"
+    is_mandatory: false
+    related_skills:
+      - openspec-review
+      - aeternum-checkpoint
+      - aeternum-invariant
+  aeternum-crypto:
     name: "Aeternum 密码学原语开发"
     version: "1.0.0"
     author: "Aeternum Team"
@@ -24,10 +62,11 @@ skills:
     output_dir: "core/src/crypto/"
     post_action: "ask_build"
     related_skills:
-      - aeternum:bridge
-      - aeternum:invariant
+      - aeternum-bridge
+      - aeternum-invariant
+    prerequisite: aeternum-checkpoint
 
-  aeternum:protocol:
+  aeternum-protocol:
     name: "Aeternum 协议与状态机开发"
     version: "1.0.0"
     author: "Aeternum Team"
@@ -48,12 +87,13 @@ skills:
     output_dir: "core/src/protocol/"
     post_action: "ask_build"
     related_skills:
-      - aeternum:crypto
-      - aeternum:android
-      - aeternum:bridge
-      - aeternum:invariant
+      - aeternum-crypto
+      - aeternum-android
+      - aeternum-bridge
+      - aeternum-invariant
+    prerequisite: aeternum-checkpoint
 
-  aeternum:android:
+  aeternum-android:
     name: "Aeternum Android 安全层开发"
     version: "1.0.0"
     author: "Aeternum Team"
@@ -74,14 +114,15 @@ skills:
     output_dir: "android/app/src/main/kotlin/io/aeternum/"
     post_action: "none"
     related_skills:
-      - aeternum:protocol
-      - aeternum:bridge
+      - aeternum-protocol
+      - aeternum-bridge
+    prerequisite: aeternum-checkpoint
 
-  aeternum:bridge:
+  aeternum-bridge:
     name: "Aeternum UniFFI 桥接管理"
-    version: "1.0.0"
+    version: "1.1.0"
     author: "Aeternum Team"
-    description: "管理 Rust ↔ Kotlin 的 UniFFI 桥接层"
+    description: "管理 Rust ↔ Kotlin 的 UniFFI 桥接层（使用 proc-macro 模式）"
     triggers:
       - "UDL.*接口"
       - "桥接.*代码"
@@ -90,14 +131,17 @@ skills:
       - "FFI.*接口"
       - "Rust.*Kotlin.*桥接"
       - "添加.*接口方法"
-      - "修改.*UDL"
-    output_dir: "core/uniffi/"
+      - "修改.*桥接"
+      - "proc.*macro"
+      - "Windows.*兼容"
+    output_dir: "core/src/bridge/"
     post_action: "ask_build"
     related_skills:
-      - aeternum:crypto
-      - aeternum:protocol
+      - aeternum-crypto
+      - aeternum-protocol
+    prerequisite: aeternum-checkpoint
 
-  aeternum:invariant:
+  aeternum-invariant:
     name: "Aeternum 不变量验证"
     version: "1.0.0"
     author: "Aeternum Team"
@@ -115,9 +159,28 @@ skills:
     output_dir: "reports/"
     post_action: "none"
     related_skills:
-      - aeternum:crypto
-      - aeternum:protocol
-      - aeternum:android
+      - aeternum-crypto
+      - aeternum-protocol
+      - aeternum-android
+    prerequisite: aeternum-checkpoint
+
+  aeternum-checkpoint:
+    name: "Aeternum 任务检查点"
+    version: "1.0.0"
+    author: "Aeternum Team"
+    description: "在执行任务前验证相关文档已被阅读，确保不违反架构规范"
+    triggers:
+      - "实现.*功能"
+      - "添加.*功能"
+      - "修改.*功能"
+      - "创建.*组件"
+      - "设计.*架构"
+      - "协议.*开发"
+      - "密钥.*管理"
+    output_dir: null
+    post_action: "none"
+    is_mandatory: true
+    related_skills: []
 
 # 四大数学不变量定义
 invariants:
@@ -149,47 +212,47 @@ invariants:
 workflows:
   - name: "添加新密码学算法"
     steps:
-      - skill: aeternum:crypto
+      - skill: aeternum-crypto
         action: "实现密码学算法"
       - question: "是否需要暴露到 Kotlin 层？"
-        if_yes: aeternum:bridge
+        if_yes: aeternum-bridge
 
   - name: "实现新设备添加流程"
     steps:
-      - skill: aeternum:protocol
+      - skill: aeternum-protocol
         action: "实现设备配对协议"
-      - skill: aeternum:crypto
+      - skill: aeternum-crypto
         action: "实现混合 KEM"
-      - skill: aeternum:android
+      - skill: aeternum-android
         action: "创建配对 UI"
-      - skill: aeternum:bridge
-        action: "添加 UDL 接口"
+      - skill: aeternum-bridge
+        action: "添加 UniFFI 导出（使用 proc-macro）"
 
   - name: "实现否决功能"
     steps:
-      - skill: aeternum:protocol
+      - skill: aeternum-protocol
         action: "实现否决协议"
-      - skill: aeternum:android
+      - skill: aeternum-android
         action: "创建否决 UI"
-      - skill: aeternum:bridge
+      - skill: aeternum-bridge
         action: "添加接口"
 
   - name: "首次设置"
     steps:
-      - skill: aeternum:android
+      - skill: aeternum-android
         action: "创建设置界面"
-      - skill: aeternum:crypto
+      - skill: aeternum-crypto
         action: "生成 MRS 派生函数"
-      - skill: aeternum:protocol
+      - skill: aeternum-protocol
         action: "初始化 Device_0"
-      - skill: aeternum:bridge
+      - skill: aeternum-bridge
         action: "添加接口"
 
   - name: "修复纪元回滚漏洞"
     steps:
-      - skill: aeternum:invariant
+      - skill: aeternum-invariant
         action: "验证并发现问题"
-      - skill: aeternum:protocol
+      - skill: aeternum-protocol
         action: "修复并添加检查"
-      - skill: aeternum:invariant
+      - skill: aeternum-invariant
         action: "重新验证"

@@ -5,9 +5,22 @@
 ## **UniFFI 跨语言调用契约与实现模板 (The Bridge Contract)**
 
 **文档编号：AET-CORE-BRIDGE-SPEC-003**
-**版本：v1.0 (Engineering Baseline)**
+**版本：v1.1 (Proc-Macro Mode)**
 **效力：强制执行 (Strict Enforcement)**
 **目标：定义 Rust 密码学核心与 Android Kotlin 外壳之间的物理边界，确保密钥零泄漏与状态一致性。**
+
+---
+
+### **重要更新 (v1.1)**
+
+**本项目已迁移到 UniFFI proc-macro 模式**，完全兼容 Windows/Linux/macOS。
+
+- ✅ **不再需要 UDL 文件** - 使用 `#[uniffi::export]` 和 `#[derive(uniffi::*)]` 宏
+- ✅ **跨平台兼容** - 解决了 Windows 上 UDL 解析器的问题
+- ✅ **类型安全** - 编译时检查，减少运行时错误
+- ✅ **Rust 惯用** - 更符合 Rust 生态系统的做法
+
+详见：[UniFFI Proc-Macro 迁移指南](./UniFFI-Proc-Macro-Migration.md)
 
 ---
 
