@@ -104,9 +104,7 @@ pub fn register_device(
     header.status = DeviceStatus::Active;
 
     // Add to device headers
-    state_machine
-        .device_headers_mut()
-        .insert(device_id, header);
+    state_machine.device_headers_mut().insert(device_id, header);
 
     Ok(())
 }

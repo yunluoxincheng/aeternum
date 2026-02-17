@@ -98,11 +98,15 @@ LIB_RELATIVE_PATH="../$LIB_FILE"
 if [ "$MODE" = "proc-macro" ]; then
     # Proc-macro 模式（推荐，跨平台兼容）
     # 直接使用编译好的库文件作为 SOURCE，UniFFI 会自动检测
+    # 命名空间通过 core/uniffi.toml 配置（使用绝对路径以避免 Windows 路径问题）
     echo -e "${BLUE}使用 proc-macro 模式（从库文件生成）${NC}"
+    # 获取 core 目录的绝对路径
+    CORE_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)/core"
     cargo run --release --bin uniffi-bindgen \
         generate \
         "$LIB_RELATIVE_PATH" \
         --language kotlin \
+        --config "$CORE_DIR/uniffi.toml" \
         --out-dir "../$KOTLIN_OUTPUT_DIR"
 else
     # UDL 模式（传统方式，Windows 上可能有问题）

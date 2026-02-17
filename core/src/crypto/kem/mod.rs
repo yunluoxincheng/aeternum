@@ -43,6 +43,50 @@ pub use kyber::{CIPHERTEXT_SIZE, PUBLIC_KEY_SIZE, SECRET_KEY_SIZE, SHARED_SECRET
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct KyberPublicKeyBytes(pub [u8; 1568]);
 
+// Implement serialization using serde_bytes
+impl serde::Serialize for KyberPublicKeyBytes {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        serializer.serialize_bytes(&self.0)
+    }
+}
+
+impl<'de> serde::Deserialize<'de> for KyberPublicKeyBytes {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        deserializer.deserialize_bytes(KyberPublicKeyBytesVisitor)
+    }
+}
+
+struct KyberPublicKeyBytesVisitor;
+
+impl<'de> serde::de::Visitor<'de> for KyberPublicKeyBytesVisitor {
+    type Value = KyberPublicKeyBytes;
+
+    fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        formatter.write_str("1568-byte Kyber public key")
+    }
+
+    fn visit_bytes<E>(self, value: &[u8]) -> Result<Self::Value, E>
+    where
+        E: serde::de::Error,
+    {
+        if value.len() != 1568 {
+            return Err(serde::de::Error::invalid_length(
+                value.len(),
+                &"expected 1568 bytes for KyberPublicKeyBytes",
+            ));
+        }
+        let mut key = [0u8; 1568];
+        key.copy_from_slice(value);
+        Ok(KyberPublicKeyBytes(key))
+    }
+}
+
 impl KyberPublicKeyBytes {
     /// Create from a byte slice.
     ///
@@ -101,6 +145,50 @@ impl KyberSecretKeyBytes {
 /// Kyber-1024 encapsulated ciphertext (1568 bytes)
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct KyberCipherText(pub [u8; 1568]);
+
+// Implement serialization using serde_bytes
+impl serde::Serialize for KyberCipherText {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        serializer.serialize_bytes(&self.0)
+    }
+}
+
+impl<'de> serde::Deserialize<'de> for KyberCipherText {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        deserializer.deserialize_bytes(KyberCipherTextVisitor)
+    }
+}
+
+struct KyberCipherTextVisitor;
+
+impl<'de> serde::de::Visitor<'de> for KyberCipherTextVisitor {
+    type Value = KyberCipherText;
+
+    fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        formatter.write_str("1568-byte Kyber ciphertext")
+    }
+
+    fn visit_bytes<E>(self, value: &[u8]) -> Result<Self::Value, E>
+    where
+        E: serde::de::Error,
+    {
+        if value.len() != 1568 {
+            return Err(serde::de::Error::invalid_length(
+                value.len(),
+                &"expected 1568 bytes for KyberCipherText",
+            ));
+        }
+        let mut ct = [0u8; 1568];
+        ct.copy_from_slice(value);
+        Ok(KyberCipherText(ct))
+    }
+}
 
 impl KyberCipherText {
     /// Create from a byte slice.

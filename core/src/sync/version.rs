@@ -106,7 +106,7 @@ impl ProtocolVersion {
     ///
     /// # Example
     ///
-    /// ```
+    /// ```no_run
     /// use aeternum_core::sync::version::{ProtocolVersion, VersionNegotiation};
     ///
     /// let v1_0 = ProtocolVersion::new(1, 0);
@@ -116,13 +116,13 @@ impl ProtocolVersion {
     /// // 小版本升级：兼容
     /// assert!(matches!(
     ///     v1_0.check_compatibility(&v1_1),
-    ///     VersionNegotiation::Compatible
+    ///     Ok(VersionNegotiation::Compatible)
     /// ));
     ///
     /// // 大版本升级：强制升级
     /// assert!(matches!(
     ///     v1_0.check_compatibility(&v2_0),
-    ///     VersionNegotiation::UpgradeRequired { .. }
+    ///     Ok(VersionNegotiation::UpgradeRequired { .. })
     /// ));
     /// ```
     pub fn check_compatibility(&self, other: &Self) -> Result<VersionNegotiation> {

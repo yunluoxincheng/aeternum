@@ -45,7 +45,11 @@ pub mod sync;
 /// Protocol state machine (PQRR, invariant enforcement)
 pub mod protocol;
 
+/// UniFFI bridge implementations (Android UI layer)
+pub mod bridge;
+
 // Re-export common types at the crate root
+pub use bridge::{AeternumEngine, DeviceInfo, VaultSession};
 pub use crypto::{error::CryptoError, error::Result};
 pub use models::{
     device::{DeviceHeader, DeviceId, DeviceStatus},

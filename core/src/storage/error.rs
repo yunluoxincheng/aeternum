@@ -84,6 +84,16 @@ pub enum StorageError {
     /// - Veto supremacy violation (Invariant #4)
     #[error("Invariant violation: {0}")]
     InvariantViolation(String),
+
+    /// Cryptographic operation failed
+    ///
+    /// This may occur due to:
+    /// - Key decryption failed
+    /// - Key derivation failed
+    /// - Key encryption failed
+    /// - Blob serialization failed
+    #[error("Crypto operation failed: {0}")]
+    CryptoFailed(String),
 }
 
 impl StorageError {
@@ -110,6 +120,11 @@ impl StorageError {
     /// Create an invariant violation error from a string message
     pub fn invariant(msg: impl Into<String>) -> Self {
         Self::InvariantViolation(msg.into())
+    }
+
+    /// Create a crypto operation error from a string message
+    pub fn crypto(msg: impl Into<String>) -> Self {
+        Self::CryptoFailed(msg.into())
     }
 }
 

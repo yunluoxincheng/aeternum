@@ -95,7 +95,8 @@ pub enum PqrrError {
     /// atomic commits, or crash recovery fail.
     StorageError {
         /// Error message from storage layer
-        message: String,
+        /// Renamed to `storage_msg` to avoid conflict with Throwable.message in Kotlin
+        storage_msg: String,
     },
 }
 
@@ -134,8 +135,8 @@ impl PqrrError {
     }
 
     /// Create a StorageError error (for epoch_upgrade module)
-    pub fn storage_error(message: String) -> Self {
-        PqrrError::StorageError { message }
+    pub fn storage_error(storage_msg: String) -> Self {
+        PqrrError::StorageError { storage_msg }
     }
 
     /// Check if this error represents an invariant violation
@@ -197,8 +198,8 @@ impl fmt::Display for PqrrError {
                 "Invalid state transition from {} to {}: {}",
                 from, to, reason
             ),
-            PqrrError::StorageError { message } => {
-                write!(f, "Storage error: {}", message)
+            PqrrError::StorageError { storage_msg } => {
+                write!(f, "Storage error: {}", storage_msg)
             }
         }
     }

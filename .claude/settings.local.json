@@ -19,7 +19,47 @@
       "mcp__plugin_context7_context7__query-docs",
       "WebSearch",
       "Bash(openspec:*)",
-      "Bash(openspec archive --help:*)"
+      "Bash(openspec archive --help:*)",
+      "Bash(cargo test:*)",
+      "Bash(cargo clippy:*)",
+      "Bash(./scripts/format-check.sh:*)",
+      "Bash(cargo fmt:*)",
+      "Bash(cargo check:*)",
+      "Bash(cargo build:*)",
+      "Bash(bash scripts/generate-bridge.sh:*)",
+      "Bash(cargo run:*)",
+      "WebFetch(domain:github.com)",
+      "Bash(bash:*)",
+      "Bash(./target/release/uniffi-bindgen.exe generate:*)",
+      "Bash(./target/release/uniffi-bindgen.exe:*)",
+      "WebFetch(domain:crates.io)",
+      "Bash(curl:*)",
+      "mcp__plugin_context7_context7__resolve-library-id",
+      "Bash(1)"
+    ]
+  },
+  "hooks": {
+    "UserPromptSubmit": [
+      {
+        "matcher": "实现|添加|修改|创建|设计|开发|重构|编写|生成|构建|完成",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo 'Checkpoint: Code modification detected. Before proceeding, confirm: 1) Called aeternum-checkpoint 2) Read required docs 3) Called corresponding skill. Task type: crypto/protocol/android/bridge/invariant'"
+          }
+        ]
+      }
+    ],
+    "SessionStart": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": ".claude/hooks/session-start.sh"
+          }
+        ]
+      }
     ]
   }
 }

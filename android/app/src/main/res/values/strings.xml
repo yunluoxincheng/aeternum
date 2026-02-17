@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- 应用名称 -->
+    <string name="app_name">Aeternum</string>
+
+    <!-- 通用 -->
+    <string name="common_confirm">确认</string>
+    <string name="common_cancel">取消</string>
+    <string name="common_retry">重试</string>
+    <string name="common_loading">加载中…</string>
+
+    <!-- 状态 -->
+    <string name="status_secure">安全</string>
+    <string name="status_warning">警告</string>
+    <string name="status_danger">危险</string>
+
+    <!-- 纪元 -->
+    <string name="epoch_label" formatted="false">Epoch %d</string>
+    <string name="epoch_upgrading" formatted="false">Epoch %d → %d</string>
+
+    <!-- 错误 -->
+    <string name="error_epoch_conflict">纪元版本冲突</string>
+    <string name="error_incomplete_data">数据不完整</string>
+    <string name="error_auth_failed">认证失败</string>
+    <string name="error_vetoed">操作已被否决</string>
+
+    <!-- 离线模式 -->
+    <string name="offline_banner">离线模式</string>
+    <string name="offline_last_sync">上次同步: %s</string>
+    <string name="offline_operation_queued">操作已加入队列，将在恢复网络后执行</string>
+
+    <!-- 生物识别 -->
+    <string name="biometric_title">验证身份</string>
+    <string name="biometric_subtitle">使用指纹或面部识别解锁 Aeternum</string>
+    <string name="biometric_failed">生物识别验证失败，请重试</string>
+
+    <!-- 设备管理 -->
+    <string name="device_list_title">我的设备</string>
+    <string name="device_active">活跃</string>
+    <string name="device_degraded">降级</string>
+    <string name="device_revoked">已撤销</string>
+    <string name="device_this_device">本机</string>
+    <string name="device_last_seen">最后在线: %s</string>
+    <string name="device_revoke_confirm">确认要撤销此设备吗？</string>
+    <string name="device_revoke_warning">撤销后，该设备将无法访问 Vault</string>
+
+    <!-- 密钥轮换 -->
+    <string name="rekeying_title">密钥轮换中</string>
+    <string name="rekeying_progress">%d%%</string>
+    <string name="rekeying_warning">请勿关闭应用</string>
+
+    <!-- 降级模式 -->
+    <string name="degraded_title">安全模式已激活</string>
+    <string name="degraded_message">设备完整性验证失败</string>
+    <string name="degraded_instruction">请检查设备是否已 root 或安装了未经授权的应用</string>
+    <string name="degraded_reverify">重新验证</string>
+
+    <!-- 撤销状态 -->
+    <string name="revoked_title">此设备已被撤销</string>
+    <string name="revoked_message">所有密钥和数据已清除</string>
+    <string name="revoked_instruction">如需重新使用，请在其他设备上重新注册</string>
+</resources>

@@ -1,0 +1,11 @@
+# UniFFI 配置文件
+#
+# 用于覆盖默认命名空间和配置特定语言绑定
+
+[kotlin]
+# Kotlin 包名 - 对应生成的 Kotlin 文件中的 package 语句
+# 必须与目录结构匹配：android/app/src/main/kotlin/aeternum/uniffi/aeternum/
+package_name = "aeternum.uniffi.aeternum"
+
+# 是否生成不可变记录（val 而不是 var）
+generate_immutable_records = false

@@ -1,6 +1,5 @@
 package io.aeternum
 
-import io.aeternum.bridge.AeternumBridge
 import io.aeternum.data.VaultRepository
 import org.koin.dsl.module
 
@@ -8,9 +7,9 @@ import org.koin.dsl.module
  * Koin 依赖注入模块
  */
 val appModule = module {
-    // Vault Repository
-    single { VaultRepository(get()) }
+    // Vault Repository - 使用无参构造函数
+    single { VaultRepository() }
 
-    // Bridge Factory
-    factory { (vaultPath: String) -> AeternumBridge(java.io.File(vaultPath)) }
+    // 注意: AeternumEngine 现在由 UniFFI 生成
+    // VaultRepository 内部会根据需要创建引擎实例
 }

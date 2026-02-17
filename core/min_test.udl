@@ -1,0 +1,19 @@
+namespace test {
+    enum TestEnum {
+        A,
+        B,
+    };
+
+    [Error]
+    enum TestError {
+        "Error1",
+        "Error2",
+    };
+
+    interface TestInterface {
+        constructor();
+
+        [Throws=TestError]
+        string test_method();
+    };
+}
